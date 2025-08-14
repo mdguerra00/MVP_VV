@@ -24,21 +24,32 @@ extern "C" void lumen_write_bytes(uint8_t *data, uint32_t length) { HMIserial.wr
 extern "C" uint16_t lumen_get_byte() { return HMIserial.available() ? HMIserial.read() : DATA_NULL; }
 
 // ===== Helpers =====
-static void HMI_WriteString(uint16_t addr, const char* text) {
+static bool HMI_WriteString(uint16_t addr, const char* text) {
   if (!text) text = "";
   const size_t len = strlen(text) + 1;
+  uint32_t sent = 0;
   if (len <= MAX_STRING_SIZE) {
     lumen_packet_t p = { addr, kString };
     memset(p.data._string, 0, sizeof(p.data._string));
     memcpy(p.data._string, text, len);
-    lumen_write_packet(&p);
+    sent = lumen_write_packet(&p);
   } else {
-    lumen_write(addr, (uint8_t*)text, (uint32_t)len);
+    sent = lumen_write(addr, (uint8_t*)text, (uint32_t)len);
   }
+  if (sent == 0) {
+    Serial.printf("[HMI] Failed to write string addr=%u\n", addr);
+    return false;
+  }
+  return true;
 }
-static void HMI_WriteListItem(uint16_t listAddr, uint16_t index, const char* text) {
+
+static bool HMI_WriteListItem(uint16_t listAddr, uint16_t index, const char* text) {
   if (!text) text = "";
   const uint32_t len = (uint32_t)strlen(text) + 1;
+  uint32_t sent = lumen_write_variable_list(listAddr, index, (uint8_t*)text, len);
+  if (sent == 0) {
+    Serial.printf("[HMI] Failed to write list item addr=%u idx=%u\n", listAddr, index);
+    return false;
   if (len <= MAX_STRING_SIZE) {
     lumen_write_variable_list(listAddr, index, (uint8_t*)text, len);
   } else {
@@ -48,18 +59,29 @@ static void HMI_WriteListItem(uint16_t listAddr, uint16_t index, const char* tex
     lumen_write_variable_list(listAddr, index, buf, MAX_STRING_SIZE);
   }
   delay(3);
+  return true;
 }
+
 static void HMI_ClearListTail(uint16_t listAddr, uint16_t fromIndex, uint16_t toIndex) {
   static const char empty[] = "";
   for (uint16_t i = fromIndex; i <= toIndex; ++i) {
-    lumen_write_variable_list(listAddr, i, (uint8_t*)empty, 1);
+    uint32_t sent = lumen_write_variable_list(listAddr, i, (uint8_t*)empty, 1);
+    if (sent == 0) {
+      Serial.printf("[HMI] Failed to clear list item addr=%u idx=%u\n", listAddr, i);
+    }
     delay(2);
   }
 }
-static void HMI_WriteS32(uint16_t addr, int32_t val) {
+
+static bool HMI_WriteS32(uint16_t addr, int32_t val) {
   lumen_packet_t p = { addr, kS32 };
   p.data._s32 = val;
-  lumen_write_packet(&p);
+  uint32_t sent = lumen_write_packet(&p);
+  if (sent == 0) {
+    Serial.printf("[HMI] Failed to write S32 addr=%u\n", addr);
+    return false;
+  }
+  return true;
 }
 
 // ===== Idioma =====
@@ -121,7 +143,9 @@ static int32_t parseLangIndexFromJson(const String& json) {
 static void applyLanguageIdx(int32_t idx, bool mirrorToHMI) {
   idx = constrain(idx, 0, 2);
   currentLang = mapLangVar(idx);
-  if (mirrorToHMI) HMI_WriteS32(ADDR_LANG_VAR, idx); // escreve 123
+  if (mirrorToHMI && !HMI_WriteS32(ADDR_LANG_VAR, idx)) {
+    Serial.println("[HMI] Failed to mirror language variable");
+  }
   HMI_RenderHome(currentLang);
   Serial.printf("[LANG] aplicado=%ld (espelhado=%s)\n", (long)idx, mirrorToHMI?"sim":"nao");
 }
