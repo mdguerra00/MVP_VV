@@ -1,4 +1,5 @@
-"home.title": "Smart Dent",
+{
+  "home.title": "Smart Dent",
   "home.subtitle": "Sistema de Post-Curado Dental",
   "home.startCure": "Iniciar Curado",
   "home.startCure.desc": "Seleccionar resina e iniciar proceso de curado",
@@ -32,6 +33,7 @@
   "settings.language.pt": "Português",
   "settings.language.en": "English",
   "settings.language.es": "Español",
+  "settings.language.de": "Deutsch",
   "settings.save": "Guardar",
   "settings.saved": "¡Configuración guardada!",
   "settings.saved.desc": "La configuración se ha actualizado correctamente.",
