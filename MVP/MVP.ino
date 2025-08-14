@@ -39,7 +39,14 @@ static void HMI_WriteString(uint16_t addr, const char* text) {
 static void HMI_WriteListItem(uint16_t listAddr, uint16_t index, const char* text) {
   if (!text) text = "";
   const uint32_t len = (uint32_t)strlen(text) + 1;
-  lumen_write_variable_list(listAddr, index, (uint8_t*)text, len);
+  if (len <= MAX_STRING_SIZE) {
+    lumen_write_variable_list(listAddr, index, (uint8_t*)text, len);
+  } else {
+    uint8_t buf[MAX_STRING_SIZE];
+    memcpy(buf, text, MAX_STRING_SIZE - 1);
+    buf[MAX_STRING_SIZE - 1] = '\0';
+    lumen_write_variable_list(listAddr, index, buf, MAX_STRING_SIZE);
+  }
   delay(3);
 }
 static void HMI_ClearListTail(uint16_t listAddr, uint16_t fromIndex, uint16_t toIndex) {
