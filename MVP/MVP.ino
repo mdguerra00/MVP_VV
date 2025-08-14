@@ -46,17 +46,18 @@ static bool HMI_WriteString(uint16_t addr, const char* text) {
 static bool HMI_WriteListItem(uint16_t listAddr, uint16_t index, const char* text) {
   if (!text) text = "";
   const uint32_t len = (uint32_t)strlen(text) + 1;
-  uint32_t sent = lumen_write_variable_list(listAddr, index, (uint8_t*)text, len);
-  if (sent == 0) {
-    Serial.printf("[HMI] Failed to write list item addr=%u idx=%u\n", listAddr, index);
-    return false;
+  uint32_t sent = 0;
   if (len <= MAX_STRING_SIZE) {
-    lumen_write_variable_list(listAddr, index, (uint8_t*)text, len);
+    sent = lumen_write_variable_list(listAddr, index, (uint8_t*)text, len);
   } else {
     uint8_t buf[MAX_STRING_SIZE];
     memcpy(buf, text, MAX_STRING_SIZE - 1);
     buf[MAX_STRING_SIZE - 1] = '\0';
-    lumen_write_variable_list(listAddr, index, buf, MAX_STRING_SIZE);
+    sent = lumen_write_variable_list(listAddr, index, buf, MAX_STRING_SIZE);
+  }
+  if (sent == 0) {
+    Serial.printf("[HMI] Failed to write list item addr=%u idx=%u\n", listAddr, index);
+    return false;
   }
   delay(3);
   return true;
