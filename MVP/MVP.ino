@@ -50,6 +50,13 @@ static bool HMI_WriteListItem(uint16_t listAddr, uint16_t index, const char* tex
   if (sent == 0) {
     Serial.printf("[HMI] Failed to write list item addr=%u idx=%u\n", listAddr, index);
     return false;
+  if (len <= MAX_STRING_SIZE) {
+    lumen_write_variable_list(listAddr, index, (uint8_t*)text, len);
+  } else {
+    uint8_t buf[MAX_STRING_SIZE];
+    memcpy(buf, text, MAX_STRING_SIZE - 1);
+    buf[MAX_STRING_SIZE - 1] = '\0';
+    lumen_write_variable_list(listAddr, index, buf, MAX_STRING_SIZE);
   }
   delay(3);
   return true;
