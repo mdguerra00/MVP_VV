@@ -5,7 +5,7 @@ O que este pacote faz
 ---------------------
 - Troca de idioma controlada pelo ESP32 (config salva em /config.json no SPIFFS).
 - Atualiza os rótulos "Configurações/Settings" e "Iniciar/Start" na HMI.
-- Escuta mudanças da variável `Lang` vindas da HMI (0=PT, 1=EN) e salva a escolha.
+- Escuta mudanças da variável `Lang` vindas da HMI (0=PT, 1=EN, 2=ES, 3=DE) e salva a escolha.
 
 Arquivos incluídos
 ------------------
@@ -47,12 +47,16 @@ ou
 {
   "lang": "EN"
 }
+ou
+{
+  "lang": "DE"
+}
 
 Fluxo de teste
 --------------
 1) Compile e grave o sketch no ESP32.
 2) Garanta que a HMI está com UART0 + Lumen Protocol (115200 8N1, sem CRC/Ack).
-3) Na HMI, altere a variável `Lang` (ex.: em um botão PT/EN com "Set Variable").
+3) Na HMI, altere a variável `Lang` (ex.: em um botão PT/EN/DE com "Set Variable").
 4) Veja o rótulo mudar:
    - `txt_Config`: "Configurações" / "Settings"
    - `txt_Start` : "Iniciar" / "Start"

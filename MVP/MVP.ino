@@ -120,7 +120,7 @@ static bool readFileToString(const char* path, String &out) {
   f.close();
   return true;
 }
-// Parser minimalista para {"lang":"EN"/"PT"/"ES"}
+// Parser minimalista para {"lang":"EN"/"PT"/"ES"/"DE"}
 static int32_t parseLangIndexFromJson(const String& json) {
   String lower = json; lower.toLowerCase();
   int pos = lower.indexOf("\"lang\"");
