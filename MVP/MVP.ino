@@ -13,7 +13,7 @@ HardwareSerial HMIserial(2);
 
 // ===== Endereços na HMI =====
 static const uint16_t ADDR_TXT_CONFIG  = 122; // Basic Text (String)
-static const uint16_t ADDR_LANG_VAR    = 123; // SignedInt32: 0=EN,1=PT,2=ES (vamos só escrever)
+static const uint16_t ADDR_LANG_VAR    = 123; // SignedInt32: 0=EN,1=PT,2=ES,3=DE (vamos só escrever)
 static const uint16_t ADDR_TXT_START   = 124; // Basic Text (String)
 static const uint16_t ADDR_TXT_LANG    = 125; // Basic Text (String)
 static const uint16_t ADDR_LIST_LANG   = 126; // Basic Text List (StringList)
@@ -88,20 +88,34 @@ static bool HMI_WriteS32(uint16_t addr, int32_t val) {
 // ===== Idioma =====
 static Language currentLang = LANG_PT; // default local até aplicarmos config
 static inline Language mapLangVar(int32_t v) {
-  switch (v) { case 0: return LANG_EN; case 1: return LANG_PT; case 2: return LANG_ES; default: return LANG_EN; }
+  switch (v) {
+    case 0: return LANG_EN;
+    case 1: return LANG_PT;
+    case 2: return LANG_ES;
+    case 3: return LANG_DE;
+    default: return LANG_EN;
+  }
 }
 static inline int32_t unmapLangVar(Language L) {
-  switch (L) { case LANG_PT: return 1; case LANG_ES: return 2; case LANG_EN: default: return 0; }
+  switch (L) {
+    case LANG_PT: return 1;
+    case LANG_ES: return 2;
+    case LANG_DE: return 3;
+    case LANG_EN:
+    default: return 0;
+  }
 }
 
 static void HMI_FillLanguageList() {
   const char* nameEN = getString(LANG_EN, ID_SETTINGS_LANGUAGE_EN); // "English"
   const char* namePT = getString(LANG_EN, ID_SETTINGS_LANGUAGE_PT); // "Português"
   const char* nameES = getString(LANG_EN, ID_SETTINGS_LANGUAGE_ES); // "Español"
+  const char* nameDE = getString(LANG_EN, ID_SETTINGS_LANGUAGE_DE); // "Deutsch"
   HMI_WriteListItem(ADDR_LIST_LANG, 0, nameEN);
   HMI_WriteListItem(ADDR_LIST_LANG, 1, namePT);
   HMI_WriteListItem(ADDR_LIST_LANG, 2, nameES);
-  if (3 < MAX_LIST_SIZE) HMI_ClearListTail(ADDR_LIST_LANG, 3, MAX_LIST_SIZE - 1);
+  HMI_WriteListItem(ADDR_LIST_LANG, 3, nameDE);
+  if (4 < MAX_LIST_SIZE) HMI_ClearListTail(ADDR_LIST_LANG, 4, MAX_LIST_SIZE - 1);
 }
 
 static void HMI_RenderHome(Language L) {
@@ -120,7 +134,7 @@ static bool readFileToString(const char* path, String &out) {
   f.close();
   return true;
 }
-// Parser minimalista para {"lang":"EN"/"PT"/"ES"}
+// Parser minimalista para {"lang":"EN"/"PT"/"ES"/"DE"}
 static int32_t parseLangIndexFromJson(const String& json) {
   String lower = json; lower.toLowerCase();
   int pos = lower.indexOf("\"lang\"");
@@ -137,12 +151,13 @@ static int32_t parseLangIndexFromJson(const String& json) {
   if (val == "en") return 0;
   if (val == "pt") return 1;
   if (val == "es") return 2;
+  if (val == "de") return 3;
   return -1;
 }
 
 // ===== Aplicação de idioma (sem ler 123) =====
 static void applyLanguageIdx(int32_t idx, bool mirrorToHMI) {
-  idx = constrain(idx, 0, 2);
+  idx = constrain(idx, 0, 3);
   currentLang = mapLangVar(idx);
   if (mirrorToHMI && !HMI_WriteS32(ADDR_LANG_VAR, idx)) {
     Serial.println("[HMI] Failed to mirror language variable");
@@ -171,7 +186,7 @@ void setup() {
   if (readFileToString("/config.json", js)) {
     cfgIdx = parseLangIndexFromJson(js);
     Serial.printf("config.json: lang=%ld (%s)\n", (long)cfgIdx,
-                  cfgIdx==0?"EN":cfgIdx==1?"PT":cfgIdx==2?"ES":"?");
+                  cfgIdx==0?"EN":cfgIdx==1?"PT":cfgIdx==2?"ES":cfgIdx==3?"DE":"?");
   } else {
     Serial.println("config.json não encontrado; usando PT");
     cfgIdx = 1;
@@ -196,7 +211,7 @@ void loop() {
       else if (p->type == kU16) idx = (int32_t)p->data._u16;
       else if (p->type == kU32) idx = (int32_t)p->data._u32;
       else continue;
-      idx = constrain(idx, 0, 2);
+      idx = constrain(idx, 0, 3);
       // aplica e espelha 123
       applyLanguageIdx(idx, /*mirrorToHMI=*/true);
     }
@@ -208,7 +223,7 @@ void loop() {
       else if (p->type == kU16) idx = (int32_t)p->data._u16;
       else if (p->type == kU32) idx = (int32_t)p->data._u32;
       else continue;
-      idx = constrain(idx, 0, 2);
+      idx = constrain(idx, 0, 3);
       // aplica, mas sem reescrever 123 (já veio dela)
       applyLanguageIdx(idx, /*mirrorToHMI=*/false);
     }
