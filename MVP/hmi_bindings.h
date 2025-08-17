@@ -1,5 +1,5 @@
 #pragma once
-#include "hmi_addresses.h"
+#include "user_variables.h"
 #include "smartcure_translations.h"
 
 struct HmiBinding { uint16_t addr; StringId id; };

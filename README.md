@@ -8,7 +8,7 @@ O MVP_VV demonstra um sistema de pós‑cura dentária baseado em ESP32 que comu
 Estrutura do projeto
 Caminho	Função
 MVP/MVP.ino	Sketch principal: configura UART2, monta o SPIFFS, carrega /config.json, renderiza textos e trata pacotes da HMI
-MVP/hmi_addresses.h	Lista os endereços dos widgets e variáveis da HMI (labels, variável de idioma, lista de idiomas etc.)
+MVP/user_variables.h	Lista os endereços dos widgets e variáveis da HMI (labels, variável de idioma, lista de idiomas etc.)
 MVP/hmi_bindings.h	Associa cada endereço da HMI a um StringId que identifica a string a ser traduzida
 MVP/hmi_renderer.cpp	Funções utilitárias para escrever strings/inteiros na HMI, preencher a lista de idiomas e renderizar telas completas de acordo com o idioma corrente
 MVP/smartcure_translations.h	Enumera idiomas (Language) e identificadores de texto (StringId), além de agrupar tabelas com as traduções em memória
@@ -51,7 +51,7 @@ O projeto requer os arquivos LumenProtocol.c e LumenProtocol.h gerados pelo Unic
 Como expandir
 Adicionar novos textos ou telas
 
-Criar novos StringId em smartcure_translations.h, inserir as traduções correspondentes e mapear o endereço da HMI em hmi_addresses.h.
+Criar novos StringId em smartcure_translations.h, inserir as traduções correspondentes e mapear o endereço da HMI em user_variables.h.
 
 Associar o endereço ao StringId em hmi_bindings.h e chamar a função de renderização adequada em hmi_renderer.cpp.
 
