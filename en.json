@@ -156,5 +156,12 @@
   "common.add": "Add",
   "common.confirm": "Confirm",
   "common.yes": "Yes",
-  "common.no": "No"
+  "common.no": "No",
+  "txt_config": "Settings",
+  "txt_start_cure": "Start Cure",
+  "txt_lang": "Language",
+  "txt_admin": "Admin",
+  "txt_system": "System Information",
+  "start_glaze_cure": "Start Glaze Cure",
+  "txt_seconds": "Seconds"
 }

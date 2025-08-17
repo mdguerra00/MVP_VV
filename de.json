@@ -147,5 +147,12 @@
   "common.add": "Hinzufügen",
   "common.confirm": "Bestätigen",
   "common.yes": "Ja",
-  "common.no": "Nein"
+  "common.no": "Nein",
+  "txt_config": "Einstellungen",
+  "txt_start_cure": "Aushärtung starten",
+  "txt_lang": "Sprache",
+  "txt_admin": "Administrator",
+  "txt_system": "Systeminformationen",
+  "start_glaze_cure": "Glasurhärtung starten",
+  "txt_seconds": "Sekunden"
 }
