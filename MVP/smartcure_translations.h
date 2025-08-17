@@ -153,8 +153,15 @@ typedef enum {
   ID_COMMON_CONFIRM = 608,
   ID_COMMON_YES = 609,
   ID_COMMON_NO = 610,
+  ID_TXT_CONFIG = 611,
+  ID_TXT_START_CURE = 612,
+  ID_TXT_LANG = 613,
+  ID_TXT_ADMIN = 614,
+  ID_TXT_SYSTEM = 615,
+  ID_START_GLAZE_CURE = 616,
+  ID_TXT_SECONDS = 617,
 } StringId;
-static const char* STR_EN[511] = {
+static const char* STR_EN[518] = {
   "Smart Dent",
   "Dental Post-Curing System",
   "Start Curing",
@@ -666,8 +673,15 @@ static const char* STR_EN[511] = {
   "Confirm",
   "Yes",
   "No",
+  "Settings",
+  "Start Cure",
+  "Language",
+  "Admin",
+  "System Information",
+  "Start Glaze Cure",
+  "Seconds",
 };
-static const char* STR_PT[511] = {
+static const char* STR_PT[518] = {
   "Smart Dent",
   "Sistema de Pós-Cura Dental",
   "Iniciar Cura",
@@ -1179,8 +1193,15 @@ static const char* STR_PT[511] = {
   "Confirmar",
   "Sim",
   "Não",
+  "Configurações",
+  "Iniciar Cura",
+  "Idioma",
+  "Admin",
+  "Informações do Sistema",
+  "Iniciar Cura do Glaze",
+  "Segundos",
 };
-static const char* STR_ES[511] = {
+static const char* STR_ES[518] = {
   "Smart Dent",
   "Sistema de Post-Curado Dental",
   "Iniciar Curado",
@@ -1692,8 +1713,15 @@ static const char* STR_ES[511] = {
   "Confirmar",
   "Sí",
   "No",
+  "Configuración",
+  "Iniciar Curado",
+  "Idioma",
+  "Admin",
+  "Información del Sistema",
+  "Iniciar Curado de Glaze",
+  "Segundos",
 };
-static const char* STR_DE[511] = {
+static const char* STR_DE[518] = {
   "Smart Dent",
   "Zahnärztliches System nach der Heizung",
   "Fang zu heilen",
@@ -2205,6 +2233,13 @@ static const char* STR_DE[511] = {
   "Bestätigen",
   "Ja",
   "NEIN",
+  "Einstellungen",
+  "Aushärtung starten",
+  "Sprache",
+  "Administrator",
+  "Systeminformationen",
+  "Glasurhärtung starten",
+  "Sekunden",
 };
 
 static inline const char** _tbl(Language lang) {
@@ -2218,7 +2253,7 @@ static inline const char** _tbl(Language lang) {
 }
 static inline const char* getString(Language lang, StringId id) {
   int idx = (int)id - 100;
-  if (idx < 0 || idx >= 511) return "";
+  if (idx < 0 || idx >= 518) return "";
   return _tbl(lang)[idx];
 }
 
