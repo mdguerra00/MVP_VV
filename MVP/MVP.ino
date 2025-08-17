@@ -104,6 +104,9 @@ void setup(){
   delay(800);                 // HMI sobe
   HMI_FillLanguageList();     // popula 126
 
+  lumen_write(&langPacket, 0);                 // idioma default = inglês
+  lumen_write(&txt_start_curePacket, "Start Cure");
+
   // Carrega idioma inicial
   int32_t cfgIdx = -1; String js;
   if (readFileToString("/config.json", js)){
@@ -130,10 +133,10 @@ void loop(){
       (const char*)pkt.data._string);
 #endif
 
-    if (pkt.address == ADDR_LIST_LANG || pkt.address == ADDR_LANG_VAR){
+    if (pkt.address == langListPacket.address || pkt.address == langPacket.address){
       int32_t idx = extractIndexLoose(pkt);
       if (idx != INT32_MIN){
-        bool mirror = (pkt.address == ADDR_LIST_LANG); // vindo da lista, espelha 123
+        bool mirror = (pkt.address == langListPacket.address); // vindo da lista, espelha 123
         applyLanguageIdx(constrain(idx,0,3), mirror);
       } else {
         Serial.println("[EVT] pacote de idioma sem valor reconhecível.");
