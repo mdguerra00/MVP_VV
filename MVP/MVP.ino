@@ -4,11 +4,10 @@
 #include <limits.h>
 #include "LumenProtocol.h"
 
-#include "hmi_addresses.h"
+#include "user_variables.h"
 #include "hmi_bindings.h"
 #include "hmi_renderer.h"
 #include "smartcure_translations.h"
-#include "user_variables.h"
 
 // ======= Config =======
 #define HMI_RX     16
