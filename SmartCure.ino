@@ -44,6 +44,9 @@ extern "C" uint16_t lumen_get_byte() {
 // Addresses and packet instances for HMI variables are defined in
 // user_variables.h.  They include entries for the timer state, selected
 // preset, elapsed time and progress bar value.
+=======
+// progress_permilleAddress (141) is declared in user_variables.h. The HMI must
+// define a corresponding S32 User Variable for the 0–1000 progress value.
 
 // Internal state for the timer
 enum CureState { STATE_IDLE = 0, STATE_RUNNING = 1, STATE_PAUSED = 2 };
@@ -72,6 +75,9 @@ static uint32_t pre_cure_values[7] = {6, 15, 30, 60, 90, 120, 180};
 // Packet instances (selected_pre_curePacket, time_curandoPacket,
 // timer_start_stopPacket and progress_permillePacket) are declared in
 // user_variables.h.
+=======
+// Packet instances for selected_pre_cure, time_curando, timer_start_stop and
+// progress_permille are defined in user_variables.h.
 
 // Helper to write an integer value to the HMI.  It updates the packet
 // structure with the type and data then calls lumen_write_packet().
