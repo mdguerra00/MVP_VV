@@ -32,8 +32,8 @@ extern "C" uint16_t lumen_get_byte() {
  *
  * This sketch centralises all of the timing logic on the ESP32 instead of
  * relying on UnicView operators.  The display simply writes the duration
- * selected by the user (selected_pre_cureAddress) and a command to start,
- * pause or stop (timer_start_stopAddress).  The ESP32 keeps track of the
+ * selected by the user (ADDR_SELECTED_PRE_CURE) and a command to start,
+ * pause or stop (ADDR_TIMER_START_STOP).  The ESP32 keeps track of the
  * elapsed time using millis(), updates the running counter every second and
  * computes a progress bar value from 0–1000 (permille).  When the elapsed
  * time meets or exceeds the selected duration the counter resets and the
@@ -41,18 +41,16 @@ extern "C" uint16_t lumen_get_byte() {
  * for pre_cure_1–pre_cure_7.
  */
 
-// Define an additional address for the progress bar permille value.  This
-// address must be added to the UnicView project as a User Variable of type
-// S32.  It should not conflict with existing addresses.  We chose 141 as
-// it follows the existing range up to 140.
-const uint16_t progress_permilleAddress = 141;
+// Addresses and packet instances for HMI variables are defined in
+// user_variables.h.  They include entries for the timer state, selected
+// preset, elapsed time and progress bar value.
 
 // Internal state for the timer
 enum CureState { STATE_IDLE = 0, STATE_RUNNING = 1, STATE_PAUSED = 2 };
 static CureState cureState = STATE_IDLE;
 
 // Target duration in seconds.  This is set when the HMI writes to
-// selected_pre_cureAddress.  If zero, the timer will not start.
+// ADDR_SELECTED_PRE_CURE.  If zero, the timer will not start.
 static uint32_t target_time_s = 0;
 
 // Timestamp (in milliseconds) when the current run started.  When the timer
@@ -71,14 +69,9 @@ static int32_t last_progress_reported = -1;
 // pre‑cure durations used previously: 6s, 15s, 30s, 60s, 90s, 120s, 180s.
 static uint32_t pre_cure_values[7] = {6, 15, 30, 60, 90, 120, 180};
 
-// Create lumen_packet_t instances for each variable we need to write back
-// to the HMI.  The addresses for selected_pre_cure, time_curando and
-// timer_start_stop come from user_variables.h.  We assign our custom
-// progress_permilleAddress here.
-static lumen_packet_t selected_pre_curePacket = { selected_pre_cureAddress, kS32 };
-static lumen_packet_t time_curandoPacket     = { time_curandoAddress,     kS32 };
-static lumen_packet_t timer_start_stopPacket = { timer_start_stopAddress, kS32 };
-static lumen_packet_t progress_permillePacket= { progress_permilleAddress,kS32 };
+// Packet instances (selected_pre_curePacket, time_curandoPacket,
+// timer_start_stopPacket and progress_permillePacket) are declared in
+// user_variables.h.
 
 // Helper to write an integer value to the HMI.  It updates the packet
 // structure with the type and data then calls lumen_write_packet().
@@ -209,13 +202,13 @@ void loop() {
       default: break;
     }
 
-    if (addr == selected_pre_cureAddress) {
+    if (addr == ADDR_SELECTED_PRE_CURE) {
       // User has chosen a new duration.  Update the target time and echo
       // the value back to the HMI.  A value <= 0 effectively disables
       // the timer until a valid duration is set.
       target_time_s = (value > 0) ? (uint32_t)value : 0;
       writeInt(&selected_pre_curePacket, target_time_s);
-    } else if (addr == timer_start_stopAddress) {
+    } else if (addr == ADDR_TIMER_START_STOP) {
       // The display is commanding the timer: 0=Stop, 1=Start/Resume,
       // 2=Single (treated as Start), 3=Pause.  We interpret and act
       // accordingly on our internal state machine.
@@ -230,19 +223,19 @@ void loop() {
       } else if (value == 3) {
         pauseCure();
       }
-    } else if (addr == pre_cure_1Address) {
+    } else if (addr == ADDR_PRE_CURE_1) {
       pre_cure_values[0] = (value > 0) ? (uint32_t)value : pre_cure_values[0];
-    } else if (addr == pre_cure_2Address) {
+    } else if (addr == ADDR_PRE_CURE_2) {
       pre_cure_values[1] = (value > 0) ? (uint32_t)value : pre_cure_values[1];
-    } else if (addr == pre_cure_3Address) {
+    } else if (addr == ADDR_PRE_CURE_3) {
       pre_cure_values[2] = (value > 0) ? (uint32_t)value : pre_cure_values[2];
-    } else if (addr == pre_cure_4Address) {
+    } else if (addr == ADDR_PRE_CURE_4) {
       pre_cure_values[3] = (value > 0) ? (uint32_t)value : pre_cure_values[3];
-    } else if (addr == pre_cure_5Address) {
+    } else if (addr == ADDR_PRE_CURE_5) {
       pre_cure_values[4] = (value > 0) ? (uint32_t)value : pre_cure_values[4];
-    } else if (addr == pre_cure_6Address) {
+    } else if (addr == ADDR_PRE_CURE_6) {
       pre_cure_values[5] = (value > 0) ? (uint32_t)value : pre_cure_values[5];
-    } else if (addr == pre_cure_7Address) {
+    } else if (addr == ADDR_PRE_CURE_7) {
       pre_cure_values[6] = (value > 0) ? (uint32_t)value : pre_cure_values[6];
     }
   }
