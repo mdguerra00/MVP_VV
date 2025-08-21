@@ -9,7 +9,7 @@
 #include "hmi_renderer.h"
 #include "smartcure_translations.h"
 
-// ======= Config =======
+// Config
 #define HMI_RX     16
 #define HMI_TX     17
 #define HMI_BAUD   115200

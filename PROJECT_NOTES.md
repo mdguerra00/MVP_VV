@@ -27,20 +27,5 @@ The UnicView project uses the following user-variable addresses. The mapping was
 | 139 | Time_Curando     | S32   | elapsed cure time (s) |
 | 140 | Timer_Start_Stop | S32   | timer state 0–stop,1–start,3–pause |
 | 141 | progress_permille| S32   | progress bar value (0–1000) |
-=======
-| Address | Designator        | Description |
-|---------|-------------------|-------------|
-| 121 | Main_Screen | número da tela Main |
-| 122 | txt_Config | word "Settings" in current language |
-| 123 | Lang | language selector 0=EN,1=PT,2=ES,3=DE |
-| 124 | txt_Start_Cure | "Start Cure" text in current language |
-| 125 | txt_Lang | "Language" text in current language |
-| 126 | Lista_de_Idiomas | list of available languages |
-| 127 | txt_Admin | "Admin" text in current language |
-| 128 | txt_System | "System Information" text in current language |
-| 138 | selected_pre_cure | duration selected from presets (s) |
-| 139 | time_curando | elapsed curing time mirrored to HMI (s) |
-| 140 | timer_start_stop | timer state command: 0=stop,1=start/resume,3=pause |
-| 141 | progress_permille | progress bar value 0–1000 |
 
 Addresses 129–137 are reserved for additional presets and labels; see `MVP/user_variables.h` for details.
