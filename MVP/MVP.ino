@@ -9,7 +9,7 @@
 #include "hmi_renderer.h"
 #include "smartcure_translations.h"
 
-// ======= Config =======
+//Config
 #define HMI_RX     16
 #define HMI_TX     17
 #define HMI_BAUD   115200
@@ -207,6 +207,7 @@ void loop(){
       (int)pkt.data._s8, (unsigned)pkt.data._u8,
       (const char*)pkt.data._string);
 #endif
+
 
     uint16_t addr = pkt.address;
     int32_t value = 0;
