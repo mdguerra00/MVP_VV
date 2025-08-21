@@ -6,11 +6,13 @@ O que este pacote faz
 - Troca de idioma controlada pelo ESP32 (config salva em /config.json no SPIFFS).
 - Atualiza os rótulos "Configurações/Settings" e "Iniciar/Start" na HMI.
 - Escuta mudanças da variável `Lang` vindas da HMI (0=PT, 1=EN, 2=ES, 3=DE) e salva a escolha.
+- Controle de tempo de cura (start/pause/resume/stop).
+- Atualização automática de barra de progresso (0–1000).
 
 Arquivos incluídos
 ------------------
-- SmartCURE_MVP_Lumen/SmartCURE_MVP_Lumen.ino  -> sketch principal
-- SmartCURE_MVP_Lumen/example_config.json      -> exemplo de config (opcional)
+- MVP/MVP.ino  -> sketch principal
+- MVP/config.json      -> exemplo de config (opcional)
 
 Arquivos que você deve adicionar (do UnicView Studio)
 -----------------------------------------------------
@@ -26,6 +28,17 @@ Mapeamento de variáveis (confirme no seu projeto UnicView)
 - txt_Config  (Basic Text) -> Address 122  (Host -> HMI / Write)
 - Lang        (Integer)    -> Address 123  (HMI -> Host / Auto-send on change)
 - txt_Start   (Basic Text) -> Address 124  (Host -> HMI / Write)
+- selected_pre_cure (Integer) -> Address 138 (HMI -> Host / Auto-send on change)
+- time_curando     (Integer) -> Address 139 (Host -> HMI / Write)
+- timer_start_stop (Integer) -> Address 140 (HMI -> Host / Auto-send on change)
+- progress_permille (Integer) -> Address 141 (Host -> HMI / Write)
+
+Variáveis do temporizador
+-------------------------
+- `selected_pre_cure` (138): duração escolhida do preset de pré-cura (segundos).
+- `time_curando` (139): tempo decorrido enviado para a HMI (segundos).
+- `timer_start_stop` (140): estado do contador (0=stop, 1=start/resume, 3=pause).
+- `progress_permille` (141): barra de progresso de 0 a 1000.
 
 Ligações físicas sugeridas
 --------------------------
@@ -56,11 +69,11 @@ Fluxo de teste
 --------------
 1) Compile e grave o sketch no ESP32.
 2) Garanta que a HMI está com UART0 + Lumen Protocol (115200 8N1, sem CRC/Ack).
-3) Na HMI, altere a variável `Lang` (ex.: em um botão PT/EN/DE com "Set Variable").
-4) Veja o rótulo mudar:
-   - `txt_Config`: "Configurações" / "Settings"
-   - `txt_Start` : "Iniciar" / "Start"
-5) A mudança de idioma é salva em /config.json no ESP32.
+3) Selecione um preset de pré-cura na HMI (`selected_pre_cure`).
+4) Inicie o contador (`timer_start_stop` = 1) e observe `time_curando` contar em segundos.
+5) Pause (`timer_start_stop` = 3) e retome (`timer_start_stop` = 1) para validar start/pause/resume.
+6) Pare o contador (`timer_start_stop` = 0) e confira o reset dos valores.
+7) Verifique se a barra de progresso acompanha o ciclo (`progress_permille` de 0 a 1000).
 
 Suporte
 -------
