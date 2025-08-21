@@ -41,11 +41,8 @@ extern "C" uint16_t lumen_get_byte() {
  * for pre_cure_1–pre_cure_7.
  */
 
-// Define an additional address for the progress bar permille value.  This
-// address must be added to the UnicView project as a User Variable of type
-// S32.  It should not conflict with existing addresses.  We chose 141 as
-// it follows the existing range up to 140.
-const uint16_t progress_permilleAddress = 141;
+// progress_permilleAddress (141) is declared in user_variables.h. The HMI must
+// define a corresponding S32 User Variable for the 0–1000 progress value.
 
 // Internal state for the timer
 enum CureState { STATE_IDLE = 0, STATE_RUNNING = 1, STATE_PAUSED = 2 };
@@ -71,14 +68,8 @@ static int32_t last_progress_reported = -1;
 // pre‑cure durations used previously: 6s, 15s, 30s, 60s, 90s, 120s, 180s.
 static uint32_t pre_cure_values[7] = {6, 15, 30, 60, 90, 120, 180};
 
-// Create lumen_packet_t instances for each variable we need to write back
-// to the HMI.  The addresses for selected_pre_cure, time_curando and
-// timer_start_stop come from user_variables.h.  We assign our custom
-// progress_permilleAddress here.
-static lumen_packet_t selected_pre_curePacket = { selected_pre_cureAddress, kS32 };
-static lumen_packet_t time_curandoPacket     = { time_curandoAddress,     kS32 };
-static lumen_packet_t timer_start_stopPacket = { timer_start_stopAddress, kS32 };
-static lumen_packet_t progress_permillePacket= { progress_permilleAddress,kS32 };
+// Packet instances for selected_pre_cure, time_curando, timer_start_stop and
+// progress_permille are defined in user_variables.h.
 
 // Helper to write an integer value to the HMI.  It updates the packet
 // structure with the type and data then calls lumen_write_packet().

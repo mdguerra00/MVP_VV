@@ -66,6 +66,10 @@ const uint16_t pre_cure_5Address       = 134; // Pre-cure step 5 duration (s)
 const uint16_t pre_cure_6Address       = 135; // Pre-cure step 6 duration (s)
 const uint16_t pre_cure_7Address       = 136; // Pre-cure step 7 duration (s)
 const uint16_t txt_secondsAddress      = 137; // "Seconds" label
+const uint16_t selected_pre_cureAddress = 138; // Selected pre-cure duration (s)
+const uint16_t time_curandoAddress      = 139; // Elapsed cure time (s)
+const uint16_t timer_start_stopAddress  = 140; // Timer command/state (0=stop,1=start,3=pause)
+const uint16_t progress_permilleAddress = 141; // Progress bar value (0–1000)
 
 // Packet instances
 static lumen_packet_t main_screenPacket      = { main_screenAddress, kS32 };   // Selected screen ID
@@ -85,5 +89,9 @@ static lumen_packet_t pre_cure_5Packet       = { pre_cure_5Address, kS32 };    /
 static lumen_packet_t pre_cure_6Packet       = { pre_cure_6Address, kS32 };    // Pre-cure stage 6 time in seconds
 static lumen_packet_t pre_cure_7Packet       = { pre_cure_7Address, kS32 };    // Pre-cure stage 7 time in seconds
 static lumen_packet_t txt_secondsPacket      = { txt_secondsAddress, kString }; // Seconds label text
+static lumen_packet_t selected_pre_curePacket = { selected_pre_cureAddress, kS32 }; // Selected pre-cure time in seconds
+static lumen_packet_t time_curandoPacket     = { time_curandoAddress,      kS32 }; // Elapsed cure time in seconds
+static lumen_packet_t timer_start_stopPacket = { timer_start_stopAddress,  kS32 }; // Timer state
+static lumen_packet_t progress_permillePacket= { progress_permilleAddress, kS32 }; // Progress bar value (permille)
 
 #endif // USER_VARIABLES_H
