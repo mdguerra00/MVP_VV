@@ -21,6 +21,70 @@ HardwareSerial HMIserial(2);
 extern "C" void lumen_write_bytes(uint8_t *data, uint32_t length){ HMIserial.write(data, length); }
 extern "C" uint16_t lumen_get_byte(){ return HMIserial.available() ? HMIserial.read() : DATA_NULL; }
 
+// ====== Lógica de cura ======
+const uint16_t selected_pre_cureAddress = 138;
+const uint16_t time_curandoAddress      = 139;
+const uint16_t timer_start_stopAddress  = 140;
+const uint16_t progress_permilleAddress = 141; // extra para barra de progresso
+
+enum CureState { STATE_IDLE = 0, STATE_RUNNING = 1, STATE_PAUSED = 2 };
+static CureState cureState = STATE_IDLE;
+
+static uint32_t target_time_s = 0;
+static uint64_t start_ms = 0;
+static uint64_t pause_start_ms = 0;
+static uint64_t accumulated_pause_ms = 0;
+
+static int32_t last_time_reported = -1;
+static int32_t last_progress_reported = -1;
+
+static uint32_t pre_cure_values[7] = {6, 15, 30, 60, 90, 120, 180};
+
+static lumen_packet_t selected_pre_curePacket = { selected_pre_cureAddress, kS32 };
+static lumen_packet_t time_curandoPacket     = { time_curandoAddress,     kS32 };
+static lumen_packet_t timer_start_stopPacket = { timer_start_stopAddress, kS32 };
+static lumen_packet_t progress_permillePacket= { progress_permilleAddress,kS32 };
+
+static inline void writeInt(lumen_packet_t* packet, int32_t value){
+  packet->type = kS32;
+  packet->data._s32 = value;
+  lumen_write_packet(packet);
+}
+
+static void startCure(){
+  if (target_time_s == 0) return;
+  cureState = STATE_RUNNING;
+  start_ms = millis();
+  accumulated_pause_ms = 0;
+  last_time_reported = -1;
+  last_progress_reported = -1;
+  writeInt(&timer_start_stopPacket, 1);
+}
+
+static void pauseCure(){
+  if (cureState == STATE_RUNNING){
+    cureState = STATE_PAUSED;
+    pause_start_ms = millis();
+    writeInt(&timer_start_stopPacket, 3);
+  }
+}
+
+static void resumeCure(){
+  if (cureState == STATE_PAUSED){
+    uint64_t now = millis();
+    accumulated_pause_ms += now - pause_start_ms;
+    cureState = STATE_RUNNING;
+    writeInt(&timer_start_stopPacket, 1);
+  }
+}
+
+static void stopCure(){
+  cureState = STATE_IDLE;
+  writeInt(&time_curandoPacket, 0);
+  writeInt(&progress_permillePacket, 0);
+  writeInt(&timer_start_stopPacket, 0);
+}
+
 // Estado do idioma
 static Language currentLang = LANG_PT;
 
@@ -107,6 +171,17 @@ void setup(){
   lumen_write(&langPacket, 0);                 // idioma default = inglês
   lumen_write(&txt_start_curePacket, "Start Cure");
 
+  // Preenche presets de cura e zera estado
+  writeInt(&pre_cure_1Packet, pre_cure_values[0]);
+  writeInt(&pre_cure_2Packet, pre_cure_values[1]);
+  writeInt(&pre_cure_3Packet, pre_cure_values[2]);
+  writeInt(&pre_cure_4Packet, pre_cure_values[3]);
+  writeInt(&pre_cure_5Packet, pre_cure_values[4]);
+  writeInt(&pre_cure_6Packet, pre_cure_values[5]);
+  writeInt(&pre_cure_7Packet, pre_cure_values[6]);
+  writeInt(&selected_pre_curePacket, 0);
+  stopCure();
+
   // Carrega idioma inicial
   int32_t cfgIdx = -1; String js;
   if (readFileToString("/config.json", js)){
@@ -133,13 +208,77 @@ void loop(){
       (const char*)pkt.data._string);
 #endif
 
-    if (pkt.address == langListPacket.address || pkt.address == langPacket.address){
+    uint16_t addr = pkt.address;
+    int32_t value = 0;
+    switch (pkt.type){
+      case kS32: value = pkt.data._s32; break;
+      case kU32: value = (int32_t)pkt.data._u32; break;
+      case kS16: value = (int32_t)pkt.data._s16; break;
+      case kU16: value = (int32_t)pkt.data._u16; break;
+      case kS8:  value = (int32_t)pkt.data._s8;  break;
+      case kU8:  value = (int32_t)pkt.data._u8;  break;
+      default: break;
+    }
+
+    if (addr == langListPacket.address || addr == langPacket.address){
       int32_t idx = extractIndexLoose(pkt);
       if (idx != INT32_MIN){
-        bool mirror = (pkt.address == langListPacket.address); // vindo da lista, espelha 123
+        bool mirror = (addr == langListPacket.address); // vindo da lista, espelha 123
         applyLanguageIdx(constrain(idx,0,3), mirror);
       } else {
         Serial.println("[EVT] pacote de idioma sem valor reconhecível.");
+      }
+    } else if (addr == selected_pre_cureAddress){
+      target_time_s = (value > 0) ? (uint32_t)value : 0;
+      writeInt(&selected_pre_curePacket, target_time_s);
+    } else if (addr == timer_start_stopAddress){
+      if (value == 0){
+        stopCure();
+      } else if (value == 1 || value == 2){
+        if (cureState == STATE_IDLE) startCure();
+        else if (cureState == STATE_PAUSED) resumeCure();
+      } else if (value == 3){
+        pauseCure();
+      }
+    } else if (addr == pre_cure_1Address){
+      pre_cure_values[0] = (value > 0) ? (uint32_t)value : pre_cure_values[0];
+    } else if (addr == pre_cure_2Address){
+      pre_cure_values[1] = (value > 0) ? (uint32_t)value : pre_cure_values[1];
+    } else if (addr == pre_cure_3Address){
+      pre_cure_values[2] = (value > 0) ? (uint32_t)value : pre_cure_values[2];
+    } else if (addr == pre_cure_4Address){
+      pre_cure_values[3] = (value > 0) ? (uint32_t)value : pre_cure_values[3];
+    } else if (addr == pre_cure_5Address){
+      pre_cure_values[4] = (value > 0) ? (uint32_t)value : pre_cure_values[4];
+    } else if (addr == pre_cure_6Address){
+      pre_cure_values[5] = (value > 0) ? (uint32_t)value : pre_cure_values[5];
+    } else if (addr == pre_cure_7Address){
+      pre_cure_values[6] = (value > 0) ? (uint32_t)value : pre_cure_values[6];
+    }
+  }
+
+  if (cureState == STATE_RUNNING){
+    uint64_t now = millis();
+    uint64_t elapsed_ms = now - start_ms - accumulated_pause_ms;
+    uint32_t elapsed_s = elapsed_ms / 1000UL;
+
+    if ((int32_t)elapsed_s != last_time_reported){
+      last_time_reported = (int32_t)elapsed_s;
+      writeInt(&time_curandoPacket, last_time_reported);
+    }
+
+    if (target_time_s > 0){
+      int32_t progress = (int32_t)((elapsed_ms * 1000ULL) / (target_time_s * 1000ULL));
+      if (progress > 1000) progress = 1000;
+      if (progress != last_progress_reported){
+        last_progress_reported = progress;
+        writeInt(&progress_permillePacket, progress);
+      }
+
+      if (elapsed_s >= target_time_s){
+        writeInt(&time_curandoPacket, (int32_t)target_time_s);
+        writeInt(&progress_permillePacket, 1000);
+        stopCure();
       }
     }
   }
