@@ -15,6 +15,15 @@ MVP/smartcure_translations.h	Enumera idiomas (Language) e identificadores de tex
 MVP/config.json	Configuração persistente que armazena o último idioma selecionado
 en.json, pt.json, es.json, de.json	Arquivos de referência das traduções; os dados são espelhados no firmware para uso imediato
 MVP/LumenProtocol.*	Biblioteca gerada pelo UnicView para implementação do Lumen Protocol na plataforma Arduino/ESP32
+Controle de Cura
+A HMI controla o ciclo de cura selecionando um preset e comandando o temporizador. As variáveis usadas nessa troca são:
+
+* **`selected_pre_cure` (138)** – preset de pré‑cura escolhido pela HMI.
+* **`timer_start_stop` (140)** – comando do temporizador: `0`=stop, `1`=run, `3`=pause.
+* **`time_curando` (139)** – tempo decorrido de cura devolvido pelo ESP32.
+* **`progress_permille` (141)** – progresso em permilagem (0–1000) para alimentar a barra de progresso.
+
+Para exibir a barra de progresso, crie a `progress_permille` como *User Variable* do tipo **S32** no endereço **141**, com faixa de 0 a 1000. Os presets `pre_cure_1…7` podem ser atualizados diretamente pela HMI para ajustar os tempos de cada etapa.
 Fluxo de execução
 Inicialização
 
@@ -28,7 +37,7 @@ O firmware lê /config.json e extrai o índice do idioma (EN, PT, ES, DE); caso 
 
 Loop principal
 
-Pacotes Lumen são lidos continuamente. Ao receber eventos nos endereços da lista de idiomas ou da variável Lang, o código aplica o novo idioma, renderiza todos os textos associados e salva a escolha se necessário
+Pacotes Lumen são lidos continuamente. Ao receber eventos nos endereços da lista de idiomas ou da variável Lang, o código aplica o novo idioma, renderiza todos os textos associados e salva a escolha se necessário. Além disso, mudanças em `timer_start_stop` disparam o temporizador de cura, que atualiza `time_curando` e `progress_permille` enquanto o ciclo estiver em execução.
 
 Renderização
 
@@ -62,6 +71,10 @@ Incluir o novo idioma no enum Language, atualizar as tabelas de tradução e aju
 Persistir outras configurações
 
 Reaproveitar o padrão de leitura/escrita de config.json para armazenar outros parâmetros de sistema.
+
+Ajustar o temporizador de cura
+
+O controle via `timer_start_stop` pode ser estendido para novos modos de operação ou etapas adicionais de cura, reutilizando `progress_permille` para exibir o avanço de cada fase.
 
 Integração física
 
